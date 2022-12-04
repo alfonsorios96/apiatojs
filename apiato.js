@@ -21,23 +21,29 @@ let populateConstructor = function (query, populate, populationObject) {
     //console.log('POPULATION!!!!', populate, populationObject)
 
     if (populate && populationObject) {
-        if ((typeof populate == "boolean" || typeof populate == "number" || typeof populate == "string") && (Boolean(populate) == true || populate == 1)) {
-            for (let [key, value] of Object.entries(populationObject)) {
-                query.populate({
-                    path: key,
-                    model: value
-                })
-            }
-        }
-        if (typeof populate == "object") {
-            for (let [key, value] of Object.entries(populate)) {
-                if (value && populationObject[key]) {
+        if (Array.isArray(populationObject)) {
+            populationObject.map(function (item, i, arr) {
+                query.populate(item);
+            });
+        } else {
+            if ((typeof populate == "boolean" || typeof populate == "number" || typeof populate == "string") && (Boolean(populate) == true || populate == 1)) {
+                for (let [key, value] of Object.entries(populationObject)) {
                     query.populate({
                         path: key,
-                        model: populationObject[key]
+                        model: value
                     })
                 }
+            }
+            if (typeof populate == "object") {
+                for (let [key, value] of Object.entries(populate)) {
+                    if (value && populationObject[key]) {
+                        query.populate({
+                            path: key,
+                            model: populationObject[key]
+                        })
+                    }
 
+                }
             }
         }
     }
@@ -86,7 +92,7 @@ let whereConstructor = function (where) {
 /** Here we define the apiato constructor */
 let apiato = function (options) {
 
-    if(!options?.hideLogo){
+    if (!options?.hideLogo) {
         console.log(`
      __   ____  __   __  ____  __       __  ____ 
  / _\\ (  _ \\(  ) / _\\(_  _)/  \\    _(  )/ ___)
@@ -976,8 +982,7 @@ let apiato = function (options) {
     this.datatable_aggregate = function (model_, pipeline_ = [], search_fields, options = {
         allowDiskUse: true,
         search_by_field: false
-    }, fIn_, fOut_)
-    {
+    }, fIn_, fOut_) {
 
 
         return async function (req, res) {
